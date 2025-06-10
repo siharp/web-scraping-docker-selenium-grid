@@ -1,0 +1,25 @@
+services:
+  # Service 1: Selenium Firefox Standalone
+  selenium-firefox:
+    image: selenium/standalone-firefox:latest
+    ports:
+      - "4444:4444"
+    shm_size: "2gb" 
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4444"]
+      interval: 5s
+      timeout: 10s
+      retries: 5 
+
+  # Service 2: Python Script (akan menjalankan scraper)
+  scraper:
+    build:
+      context: ./selenium-script
+    depends_on:
+      selenium-firefox:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      
