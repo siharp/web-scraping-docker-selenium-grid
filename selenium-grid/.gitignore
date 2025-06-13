@@ -1,0 +1,3 @@
+data/
+.env
+script/__pycache__/

@@ -1,4 +1,3 @@
-version: '3'
 services:
   hub:
     image: selenium/hub:latest
@@ -50,19 +49,6 @@ services:
     networks:
       - selenium-net
 
-  firefox_4:
-    image: selenium/node-firefox:latest
-    container_name: selenium-node-4
-    depends_on:
-      - hub
-    environment:
-      SE_EVENT_BUS_HOST: hub  # Penting: Atur nama host Hub
-      SE_EVENT_BUS_PUBLISH_PORT: 4442
-      SE_EVENT_BUS_SUBSCRIBE_PORT: 4443
-      SE_NODE_LABELS: firefox,node4
-    shm_size: 2g
-    networks:
-      - selenium-net
 
 networks:
   selenium-net:  # Pastikan semua layanan berada dalam jaringan yang sama

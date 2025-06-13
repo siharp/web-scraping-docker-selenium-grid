@@ -1,41 +1,44 @@
-from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.common.by import By
-from concurrent.futures import ThreadPoolExecutor
-import time
+import multiprocessing
+from script import batik, lion, saj, merge_json
+import os
+from dotenv import load_dotenv
 
-# URL dari Selenium Hub
-hub_url = "http://localhost:4444/wd/hub"
+load_dotenv()  # Memuat variabel lingkungan dari file .env jika ada
+username = os.getenv('user_name')
+password = os.getenv('password')
+start_date = '2025-05-01'  # Ganti dengan tanggal mulai yang diinginkan
+end_date = '2025-05-31'  # Ganti dengan tanggal akhir yang diinginkan
 
-#Inisializise webdriver
-def init_driver(node):
-    options = Options()
-    # options.add_argument("--start-maximized")
-    options.add_argument("--headless")
-    options.set_capability("se:nodeLabels", ["firefox", f"{node}"])
+def run_batik():
+    batik.main_batik(username=username, password=password, start_date=start_date, end_date=end_date)
 
-    driver = webdriver.Remote(command_executor=hub_url,options=options)
-    driver.maximize_window()
-    return driver
+def run_lion():
+    lion.main_lion(username=username, password=password, start_date=start_date, end_date=end_date)
 
-def scraping(node):
-    # Inisialisasi driver untuk node1
-    driver = init_driver(f"{node}")
-    driver.get("https://quotes.toscrape.com")
-    time.sleep(2)
+def run_saj():
+    saj.main_saj(username=username, password=password, start_date=start_date, end_date=end_date)
 
-    # Ambil semua elemen quote
-    quotes = driver.find_elements(By.CLASS_NAME, "text")
 
-    time.sleep(20)
-    # Cetak hasil
-    for i, quote in enumerate(quotes, start=1):
-        print(f"{i}. {quote.text}")
-
-    # Tutup browser
-    driver.quit()
 
 if __name__ == "__main__":
-    nodes = ["node1", "node2", "node3", "node4"]
-    with ThreadPoolExecutor(max_workers=len(nodes)) as executor:
-        executor.map(scraping, nodes)
+    # Membuat dan menjalankan proses secara paralel
+    processes = []
+
+    # Menambahkan setiap proses
+    processes.append(multiprocessing.Process(target=run_batik))
+    processes.append(multiprocessing.Process(target=run_lion))
+    processes.append(multiprocessing.Process(target=run_saj))
+    
+
+    # Memulai semua proses
+    for p in processes:
+        p.start()
+
+    # Menunggu semua proses selesai
+    for p in processes:
+        p.join()
+
+    print("Semua skrip telah selesai dijalankan.")
+
+    # Menggabungkan file JSON menjadi CSV
+    merge_json.process_json_to_csv('./data', '.')
